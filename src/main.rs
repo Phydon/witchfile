@@ -79,10 +79,7 @@ fn main() {
         let config = Config::new(type_flag, show_errors_flag);
 
         // start
-        if let Err(err) = get_metadata(config, path.to_path_buf()) {
-            error!("ERROR reading path {}: {}", path.display(), err);
-            process::exit(1);
-        }
+        get_metadata(config, path.to_path_buf());
     } else {
         // handle commands
         match matches.subcommand() {
@@ -174,12 +171,52 @@ fn witchfile() -> Command {
         )
 }
 
-fn get_metadata(config: Config, path: PathBuf) -> io::Result<()> {
-    if let Some(ext) = path.extension() {
-        println!("{}", ext.to_string_lossy().to_string());
-    }
+fn get_metadata(config: Config, path: PathBuf) {
+    if path.exists() {
+        let name = if let Some(name) = path.file_stem() {
+            name.to_string_lossy().blue().to_string()
+        } else {
+            "-".dimmed().to_string()
+        };
 
-    Ok(())
+        let filetype = if path.is_file() {
+            "file".white().to_string()
+        } else if path.is_dir() {
+            "directory".white().to_string()
+        } else if path.is_symlink() {
+            "symlink".white().to_string()
+        } else {
+            "-".dimmed().to_string()
+        };
+
+        let ext = if let Some(ext) = path.extension() {
+            ext.to_string_lossy().red().to_string()
+        } else {
+            "-".dimmed().to_string()
+        };
+
+        println!("{} {:>8} {}", "Name:     ".italic(), " ", name);
+        println!("{} {:>8} {}", "Type:     ".italic(), " ", filetype);
+        println!("{} {:>8} {}", "Extension:".italic(), " ", ext);
+
+        // error!("Error while reading \'{}\'", path.display());
+        // match err.kind() {
+        //     io::ErrorKind::NotFound => {
+        //         error!("File not found: {err}");
+        //     }
+        //     io::ErrorKind::PermissionDenied => {
+        //         error!("You don`t have access to the file: {err}");
+        //     }
+        //     io::ErrorKind::InvalidData => {
+        //         error!("Found invalid data: {err}");
+        //     }
+        //     _ => {
+        //         error!("An unexpected error occured: {}", err);
+        //     }
+        // }
+    } else {
+        error!("File \'{}\' not found", path.display());
+    }
 }
 
 fn check_create_config_dir() -> io::Result<PathBuf> {
