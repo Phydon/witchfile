@@ -9,6 +9,7 @@ use std::{
     process,
 };
 
+// TODO add size, modified, owner, group, permissions
 struct Config {
     type_flag: bool,
     show_errors_flag: bool,
@@ -71,13 +72,17 @@ fn main() {
 
     if let Some(arg) = matches.get_one::<String>("arg") {
         // get search path from arguments
-        let path = Path::new(arg).to_path_buf();
+        let path = Path::new(arg);
+        // let path = Path::new(arg).to_path_buf();
 
         // construct Config
         let config = Config::new(type_flag, show_errors_flag);
 
         // start
-        todo!();
+        if let Err(err) = get_metadata(config, path.to_path_buf()) {
+            error!("ERROR reading path {}: {}", path.display(), err);
+            process::exit(1);
+        }
     } else {
         // handle commands
         match matches.subcommand() {
@@ -122,11 +127,11 @@ fn witchfile() -> Command {
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
-            Arg::new("args")
-                .help("Add a search pattern and a path")
+            Arg::new("arg")
+                .help("Add a path")
                 .action(ArgAction::Set)
-                .num_args(2)
-                .value_names(["PATTERN", "PATH"]),
+                .num_args(1)
+                .value_names(["PATH"]),
         )
         .arg(
             Arg::new("type")
@@ -169,8 +174,12 @@ fn witchfile() -> Command {
         )
 }
 
-fn get_metadata() {
-    todo!();
+fn get_metadata(config: Config, path: PathBuf) -> io::Result<()> {
+    if let Some(ext) = path.extension() {
+        println!("{}", ext.to_string_lossy().to_string());
+    }
+
+    Ok(())
 }
 
 fn check_create_config_dir() -> io::Result<PathBuf> {

@@ -394,18 +394,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
 
 [[package]]
-name = "seclog"
-version = "0.1.0"
-dependencies = [
- "clap",
- "ctrlc",
- "dirs",
- "flexi_logger",
- "log",
- "owo-colors",
-]
-
-[[package]]
 name = "serde"
 version = "1.0.164"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -588,3 +576,15 @@ name = "windows_x86_64_msvc"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
+
+[[package]]
+name = "witchfile"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "ctrlc",
+ "dirs",
+ "flexi_logger",
+ "log",
+ "owo-colors",
+]
