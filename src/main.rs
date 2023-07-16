@@ -51,21 +51,6 @@ const ARCHIVES: &[&'static str] = &[
 // darkgray
 const OTHER: &[&'static str] = &["~", "git", "gitignore", "tmp", "lock", "txt"];
 
-// TODO add size, modified, owner, group, permissions
-struct Config {
-    type_flag: bool,
-    show_errors_flag: bool,
-}
-
-impl Config {
-    fn new(type_flag: bool, show_errors_flag: bool) -> Self {
-        Self {
-            type_flag,
-            show_errors_flag,
-        }
-    }
-}
-
 fn main() {
     // handle Ctrl+C
     ctrlc::set_handler(move || {
@@ -102,27 +87,12 @@ fn main() {
 
     // handle arguments
     let matches = witchfile().get_matches();
-    let mut type_flag = matches.get_flag("type");
-    let mut show_errors_flag = matches.get_flag("show-errors");
-    let override_flag = matches.get_flag("override");
-
-    // if override flag is set -> reset everything to default values
-    if override_flag {
-        type_flag = false;
-        show_errors_flag = false;
-    }
-
     if let Some(arg) = matches.get_one::<String>("arg") {
         // get search path from arguments
         let path = Path::new(arg);
-        // FIXME remove?
-        // let path = Path::new(arg).to_path_buf();
-
-        // construct Config
-        let config = Config::new(type_flag, show_errors_flag);
 
         // start
-        get_metadata(config, path.to_path_buf());
+        get_metadata(path.to_path_buf());
     } else {
         // handle commands
         match matches.subcommand() {
@@ -173,39 +143,6 @@ fn witchfile() -> Command {
                 .num_args(1)
                 .value_names(["PATH"]),
         )
-        .arg(
-            Arg::new("type")
-                .short('f')
-                .long("type")
-                .help("Show the filetype")
-                .action(ArgAction::SetTrue),
-        )
-        .arg(
-            Arg::new("override")
-                .short('o')
-                .long("override")
-                .help("Override all previously set flags")
-                .long_help(format!(
-                    "{}\n{}\n{}",
-                    "Override all previously set flags",
-                    "This can be used when a custom alias for this command is set together with regularly used flags",
-                    "This flag allows to disable these flags and specify new ones"
-                ))
-                // TODO if new args -> add here to this list to override if needed
-                .overrides_with_all(["type", "show-errors"])
-                .action(ArgAction::SetTrue),
-        )
-        .arg(
-            Arg::new("show-errors")
-                .long("show-errors")
-                .help("Show possible filesystem errors")
-                .long_help(format!(
-                    "{}\n{}",
-                    "Show possible filesystem errors",
-                    "For example for situations such as insufficient permissions",
-                ))
-                .action(ArgAction::SetTrue)
-        )
         .subcommand(
             Command::new("log")
                 .short_flag('L')
@@ -214,11 +151,11 @@ fn witchfile() -> Command {
         )
 }
 
-fn get_metadata(config: Config, path: PathBuf) {
+fn get_metadata(path: PathBuf) {
     if path.exists() {
-        // Initiate table
+        // Initialize table
         let mut table = Table::new();
-        table.set_format(*format::consts::FORMAT_NO_LINESEP_WITH_TITLE);
+        table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
 
         // get filename
         let name = if let Some(name) = path.file_stem() {
@@ -249,7 +186,7 @@ fn get_metadata(config: Config, path: PathBuf) {
         let extension = ext.truecolor(226, 120, 120).to_string();
         table.add_row(row!["Extension".dimmed(), r->extension]);
 
-        // get file category
+        // get file category from file extension
         let mut category = String::new();
 
         if EXECUTABLE.iter().any(|it| ext.eq(it)) {
@@ -364,22 +301,6 @@ fn get_metadata(config: Config, path: PathBuf) {
         table.printstd();
     } else {
         error!("File \'{}\' not found", path.display());
-
-        // error!("Error while reading \'{}\'", path.display());
-        // match err.kind() {
-        //     io::ErrorKind::NotFound => {
-        //         error!("File not found: {err}");
-        //     }
-        //     io::ErrorKind::PermissionDenied => {
-        //         error!("You don`t have access to the file: {err}");
-        //     }
-        //     io::ErrorKind::InvalidData => {
-        //         error!("Found invalid data: {err}");
-        //     }
-        //     _ => {
-        //         error!("An unexpected error occured: {}", err);
-        //     }
-        // }
     }
 }
 
