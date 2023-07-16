@@ -141,7 +141,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.1")
+        .version("1.0.2")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
@@ -394,7 +394,7 @@ fn check_create_config_dir() -> io::Result<PathBuf> {
     match dirs::config_dir() {
         Some(config_dir) => {
             new_dir.push(config_dir);
-            new_dir.push("sf");
+            new_dir.push("witchfile");
             if !new_dir.as_path().exists() {
                 fs::create_dir(&new_dir)?;
             }
@@ -408,7 +408,7 @@ fn check_create_config_dir() -> io::Result<PathBuf> {
 }
 
 fn show_log_file(config_dir: &PathBuf) -> io::Result<String> {
-    let log_path = Path::new(&config_dir).join("sf.log");
+    let log_path = Path::new(&config_dir).join("witchfile.log");
     match log_path.try_exists()? {
         true => {
             return Ok(format!(
