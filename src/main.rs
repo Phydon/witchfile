@@ -121,19 +121,27 @@ fn witchfile() -> Command {
             "WITCHFILE".bold().truecolor(250, 0, 104),
             "Leann Phydon <leann.phydon@gmail.com>".italic().dimmed()
         ))
-        .about("WitchFile")
+        .about("Get file metadata")
         .before_long_help(format!(
             "{}\n{}",
             "WICTHFILE".bold().truecolor(250, 0, 104),
             "Leann Phydon <leann.phydon@gmail.com>".italic().dimmed()
         ))
         .long_about(format!(
-            "{}\n  {}\n",
-            "WitchFile",
-            "Get file metadata".truecolor(250, 0, 104)
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "Get metadata from files",
+            "  - name",
+            "  - extension",
+            "  - type",
+            "  - type category",
+            "  - size",
+            "  - creation time",
+            "  - last access time",
+            "  - last modification time",
+            "  - permissions",
         ))
         // TODO update version
-        .version("1.0.0")
+        .version("1.0.1")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
