@@ -16,11 +16,11 @@
 
 ## Examples
 
-> wf testfile.txt
+```wf testfile.txt```
 
 ![witchfile testfile.txt](https://github.com/Phydon/witchfile/blob/master/assets/wtxt.png)
 
-> wf testpdf.pdf
+```wf testpdf.pdf```
 
 ![witchfile testpdf.pdf](https://github.com/Phydon/witchfile/blob/master/assets/wpdf.png)
 
