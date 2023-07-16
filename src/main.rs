@@ -242,38 +242,35 @@ fn get_metadata(config: Config, path: PathBuf) {
 
         // get file extension
         let ext = if let Some(ext) = path.extension() {
-            ext.to_string_lossy().truecolor(226, 120, 120).to_string()
+            ext.to_string_lossy().to_string()
         } else {
-            "-".dimmed().to_string()
+            "-".to_string()
         };
-        table.add_row(row!["Extension".dimmed(), r->ext]);
+        let extension = ext.truecolor(226, 120, 120).to_string();
+        table.add_row(row!["Extension".dimmed(), r->extension]);
 
         // get file category
         let mut category = String::new();
 
-        // FIXME
-        // comparing extension to category doesn`t work with "=="
-        // wrong results with "contains()"
-        // -> e.g. "pdf" is matched to "programming" category
-        if EXECUTABLE.iter().any(|it| ext.contains(it)) {
+        if EXECUTABLE.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "executable".bold().truecolor(226, 120, 120));
             category.push_str(&cstr);
-        } else if SPECIAL.iter().any(|it| ext.contains(it)) {
+        } else if SPECIAL.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "special".truecolor(226, 164, 120));
             category.push_str(&cstr);
-        } else if PROGRAMMING.iter().any(|it| ext.contains(it)) {
+        } else if PROGRAMMING.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "programming".truecolor(180, 190, 130));
             category.push_str(&cstr);
-        } else if OFFICE.iter().any(|it| ext.contains(it)) {
+        } else if OFFICE.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "office".truecolor(226, 120, 120));
             category.push_str(&cstr);
-        } else if MEDIA.iter().any(|it| ext.contains(it)) {
+        } else if MEDIA.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "media".truecolor(173, 160, 211));
             category.push_str(&cstr);
-        } else if ARCHIVES.iter().any(|it| ext.contains(it)) {
+        } else if ARCHIVES.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "archives".truecolor(137, 184, 194));
             category.push_str(&cstr);
-        } else if OTHER.iter().any(|it| ext.contains(it)) {
+        } else if OTHER.iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "other".truecolor(107, 112, 137));
             category.push_str(&cstr);
         } else {
