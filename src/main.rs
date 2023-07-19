@@ -183,7 +183,7 @@ fn get_metadata(path: PathBuf) {
         } else {
             "-".dimmed().to_string()
         };
-        table.add_row(row!["Type".dimmed(), r->filetype]);
+        table.add_row(row!["Type".dimmed(), rb->filetype]);
 
         // get file extension
         let ext = if let Some(ext) = path.extension() {
