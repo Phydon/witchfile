@@ -9,6 +9,7 @@ use owo_colors::colored::*;
 
 use std::{
     fs, io,
+    os::windows::prelude::MetadataExt,
     path::{Path, PathBuf},
     process,
     time::SystemTime,
@@ -24,7 +25,7 @@ const EXECUTABLE: &[&'static str] = &["exe", "msi", "bat"];
 // yellow
 const SPECIAL: &[&'static str] = &[
     "md", "cgf", "conf", "config", "ini", "json", "tml", "toml", "yaml", "yml", "csv", "markdown",
-    "org", "rst", "xml",
+    "org", "rst", "xml", "log",
 ];
 // green
 const PROGRAMMING: &[&'static str] = &[
@@ -128,7 +129,7 @@ fn witchfile() -> Command {
             "Leann Phydon <leann.phydon@gmail.com>".italic().dimmed()
         ))
         .long_about(format!(
-            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             "Get metadata from files",
             "  - name",
             "  - extension",
@@ -138,10 +139,13 @@ fn witchfile() -> Command {
             "  - creation time",
             "  - last access time",
             "  - last modification time",
+            "  - hidden",
+            "  - system file",
+            "  - temporary",
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.3")
+        .version("1.0.4")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
@@ -294,6 +298,36 @@ fn get_metadata(path: PathBuf) {
                 }
             }
 
+            // check if hidden
+            if is_hidden(meta.clone()) {
+                table.add_row(row![
+                    "Hidden".dimmed(),
+                    r->"yes".truecolor(137, 184, 194).dimmed()
+                ]);
+            } else {
+                table.add_row(row!["Hidden".dimmed(), r->"no".dimmed()]);
+            }
+
+            // check if systemfile
+            if is_systemfile(meta.clone()) {
+                table.add_row(row![
+                    "System".dimmed(),
+                    r->"yes".truecolor(137, 184, 194).dimmed()
+                ]);
+            } else {
+                table.add_row(row!["System".dimmed(), r->"no".dimmed()]);
+            }
+
+            // check if temporary
+            if is_temporary(meta.clone()) {
+                table.add_row(row![
+                    "Temporary".dimmed(),
+                    r->"yes".truecolor(137, 184, 194).dimmed()
+                ]);
+            } else {
+                table.add_row(row!["Temporary".dimmed(), r->"no".dimmed()]);
+            }
+
             // get permissions
             if meta.permissions().readonly() {
                 table.add_row(row![
@@ -367,26 +401,56 @@ fn to_humanreadable(systime: SystemTime) -> String {
     match systemtime {
         0..=59 => {
             human_readable.push_str(systemtime.to_string().as_str());
-            human_readable.push_str(" secs ago");
+            human_readable.push_str(" sec(s) ago");
         }
         60..=3599 => {
             let minutes = ((systemtime as f64 / 60.0) as f64).round();
             human_readable.push_str(minutes.to_string().as_str());
-            human_readable.push_str(" mins ago");
+            human_readable.push_str(" min(s) ago");
         }
         3600..=86399 => {
             let hours = ((systemtime as f64 / 3600.0) as f64).round();
             human_readable.push_str(hours.to_string().as_str());
-            human_readable.push_str("  hrs ago");
+            human_readable.push_str("  hr(s) ago");
         }
         86400.. => {
             let days = ((systemtime as f64 / 86400.0) as f64).round();
             human_readable.push_str(days.to_string().as_str());
-            human_readable.push_str(" days ago");
+            human_readable.push_str(" day(s) ago");
         }
     }
 
     human_readable
+}
+
+fn is_hidden(metadata: fs::Metadata) -> bool {
+    let attributes = metadata.file_attributes();
+
+    if (attributes & 0x2) > 0 {
+        true
+    } else {
+        false
+    }
+}
+
+fn is_systemfile(metadata: fs::Metadata) -> bool {
+    let attributes = metadata.file_attributes();
+
+    if (attributes & 0x4) > 0 {
+        true
+    } else {
+        false
+    }
+}
+
+fn is_temporary(metadata: fs::Metadata) -> bool {
+    let attributes = metadata.file_attributes();
+
+    if (attributes & 0x100) > 0 {
+        true
+    } else {
+        false
+    }
 }
 
 fn check_create_config_dir() -> io::Result<PathBuf> {
