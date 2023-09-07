@@ -25,7 +25,7 @@ const EXECUTABLE: &[&'static str] = &["exe", "msi", "bat"];
 // yellow
 const SPECIAL: &[&'static str] = &[
     "md", "cgf", "conf", "config", "ini", "json", "tml", "toml", "yaml", "yml", "csv", "markdown",
-    "org", "rst", "xml", "log",
+    "org", "rst", "xml", "log", "ron",
 ];
 // green
 const PROGRAMMING: &[&'static str] = &[
@@ -145,7 +145,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.4")
+        .version("1.0.5")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
