@@ -37,7 +37,7 @@ const PROGRAMMING: &[&'static str] = &[
 // pink
 const MEDIA: &[&'static str] = &[
     "bmp", "gif", "jpeg", "jpg", "png", "svg", "avi", "mp4", "wmv", "wma", "mp3", "wav", "mid",
-    "ttf",
+    "ttf", "m4a",
 ];
 // red
 const OFFICE: &[&'static str] = &[
@@ -145,7 +145,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.5")
+        .version("1.0.6")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
