@@ -6,6 +6,7 @@ use clap::{Arg, ArgAction, Command};
 use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
 use log::error;
 use owo_colors::colored::*;
+use rayon::prelude::*;
 
 use std::{
     fs, io,
@@ -55,13 +56,7 @@ const OTHER: &[&'static str] = &["~", "git", "gitignore", "tmp", "lock", "txt"];
 fn main() {
     // handle Ctrl+C
     ctrlc::set_handler(move || {
-        println!(
-            "{} {} {} {}",
-            "Received Ctrl-C!".bold().red(),
-            "🤬",
-            "Exit program!".bold().red(),
-            "☠",
-        );
+        println!("{}", "Received Ctrl-C!".italic(),);
         process::exit(0)
     })
     .expect("Error setting Ctrl-C handler");
@@ -145,7 +140,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.6")
+        .version("1.0.7")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
@@ -201,25 +196,25 @@ fn get_metadata(path: PathBuf) {
         // get file category from file extension
         let mut category = String::new();
 
-        if EXECUTABLE.iter().any(|it| ext.eq(it)) {
+        if EXECUTABLE.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "executable".bold().truecolor(226, 120, 120));
             category.push_str(&cstr);
-        } else if SPECIAL.iter().any(|it| ext.eq(it)) {
+        } else if SPECIAL.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "special".truecolor(226, 164, 120));
             category.push_str(&cstr);
-        } else if PROGRAMMING.iter().any(|it| ext.eq(it)) {
+        } else if PROGRAMMING.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "programming".truecolor(180, 190, 130));
             category.push_str(&cstr);
-        } else if OFFICE.iter().any(|it| ext.eq(it)) {
+        } else if OFFICE.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "office".truecolor(226, 120, 120));
             category.push_str(&cstr);
-        } else if MEDIA.iter().any(|it| ext.eq(it)) {
+        } else if MEDIA.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "media".truecolor(173, 160, 211));
             category.push_str(&cstr);
-        } else if ARCHIVES.iter().any(|it| ext.eq(it)) {
+        } else if ARCHIVES.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "archives".truecolor(137, 184, 194));
             category.push_str(&cstr);
-        } else if OTHER.iter().any(|it| ext.eq(it)) {
+        } else if OTHER.par_iter().any(|it| ext.eq(it)) {
             let cstr = format!("{}", "other".truecolor(107, 112, 137));
             category.push_str(&cstr);
         } else {
