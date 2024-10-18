@@ -8,10 +8,15 @@
 * extension
 * type
 * type category
+* unicode
+* ascii
 * size
 * creation time
 * last access time
 * last modification time
+* hidden
+* system file
+* temporary
 * permissions
 
 ## Examples
