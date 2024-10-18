@@ -124,12 +124,14 @@ fn witchfile() -> Command {
             "Leann Phydon <leann.phydon@gmail.com>".italic().dimmed()
         ))
         .long_about(format!(
-            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
+            "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}",
             "Get metadata from files",
             "  - name",
             "  - extension",
             "  - type",
             "  - type category",
+            "  - unicode",
+            "  - ascii",
             "  - size",
             "  - creation time",
             "  - last access time",
