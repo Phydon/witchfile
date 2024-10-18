@@ -172,7 +172,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.8")
+        .version("1.1.0")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
