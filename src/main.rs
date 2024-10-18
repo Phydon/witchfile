@@ -140,7 +140,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.0.7")
+        .version("1.0.8")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
@@ -180,6 +180,32 @@ fn get_metadata(path: PathBuf) {
         // get file category based on file extension
         let category = get_category(ext);
         table.add_row(row!["Category".dimmed(), r->category]);
+
+        // check encoding
+        match is_valid_unicode(&path) {
+            Ok(content) => {
+                table.add_row(row![
+                    "Unicode".dimmed(),
+                    r->"yes".truecolor(137, 184, 194).dimmed()
+                ]);
+                if content.is_ascii() {
+                    // ASCII is a subset of unicode
+                    table.add_row(row![
+                        "ASCII".dimmed(),
+                        r->"yes".truecolor(137, 184, 194).dimmed()
+                    ]);
+                } else {
+                    table.add_row(row!["ASCII".dimmed(), r->"no".dimmed()]);
+                }
+            }
+            Err(_) => {
+                table.add_row(row![
+                    "Unicode".dimmed(),
+                    r->"no".dimmed()
+                ]);
+                table.add_row(row!["ASCII".dimmed(), r->"no".dimmed()]);
+            }
+        }
 
         // get file metadata
         let meta: Option<fs::Metadata> = if let Ok(m) = fs::metadata(path) {
@@ -470,6 +496,12 @@ fn is_temporary(metadata: fs::Metadata) -> bool {
     } else {
         false
     }
+}
+
+fn is_valid_unicode(path: &PathBuf) -> io::Result<String> {
+    let content = fs::read_to_string(path)?;
+
+    Ok(content)
 }
 
 fn check_create_config_dir() -> io::Result<PathBuf> {
