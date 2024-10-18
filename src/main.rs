@@ -178,6 +178,10 @@ fn witchfile() -> Command {
         .arg(
             Arg::new("arg")
                 .help("Add a path")
+                .long_help(format!(
+                    "{}\n{}",
+                    "Add a path", "Read all entries in current directory with '*'"
+                ))
                 .action(ArgAction::Set)
                 .num_args(1)
                 .value_names(["PATH"]),
