@@ -4,7 +4,7 @@ use prettytable::{format, Table};
 
 use clap::{Arg, ArgAction, Command};
 use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
-use log::error;
+use log::{error, warn};
 use owo_colors::colored::*;
 use rayon::prelude::*;
 
@@ -84,11 +84,41 @@ fn main() {
     // handle arguments
     let matches = witchfile().get_matches();
     if let Some(arg) = matches.get_one::<String>("arg") {
-        // get search path from arguments
-        let path = Path::new(arg);
+        if arg.eq("*") {
+            // get type & category for every entry in current directory
 
-        // start
-        get_metadata(path.to_path_buf());
+            // Initialize table
+            let mut table = Table::new();
+            table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+
+            for entry in fs::read_dir(".").unwrap_or_else(|err| {
+                error!("Unable to read current directory: {err}");
+                process::exit(1);
+            }) {
+                match entry {
+                    Ok(entry) => {
+                        let path = entry.path();
+                        let name = get_name(&path);
+                        let filetype = get_filetype(&path);
+                        let extension = get_extension(&path);
+                        let category = get_category(extension);
+                        table.set_titles(row![c->"Name", c->"Filetype", c->"Category"]);
+                        table.add_row(row![l->name, l->filetype, l->category]);
+                    }
+                    // TODO check if it works
+                    Err(ref err) => {
+                        warn!("Unable to read entry '{:?}': {}", entry, err);
+                    }
+                }
+            }
+
+            // print table
+            table.printstd();
+        } else {
+            // get search path from arguments
+            let path = Path::new(arg);
+            get_metadata(path.to_path_buf());
+        }
     } else {
         // handle commands
         match matches.subcommand() {
@@ -184,7 +214,7 @@ fn get_metadata(path: PathBuf) {
         table.add_row(row!["Category".dimmed(), r->category]);
 
         // check encoding
-        match is_valid_unicode(&path) {
+        match is_unicode(&path) {
             Ok(content) => {
                 table.add_row(row![
                     "Unicode".dimmed(),
@@ -500,7 +530,7 @@ fn is_temporary(metadata: fs::Metadata) -> bool {
     }
 }
 
-fn is_valid_unicode(path: &PathBuf) -> io::Result<String> {
+fn is_unicode(path: &PathBuf) -> io::Result<String> {
     let content = fs::read_to_string(path)?;
 
     Ok(content)
