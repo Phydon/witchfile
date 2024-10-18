@@ -21,6 +21,8 @@
 
 ## Examples
 
+> todo: update examples
+
 ```wf testfile.txt```
 
 ![witchfile testfile.txt](https://github.com/Phydon/witchfile/blob/master/assets/wtxt.png)
