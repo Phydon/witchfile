@@ -165,63 +165,20 @@ fn get_metadata(path: PathBuf) {
         table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
 
         // get filename
-        let name = if let Some(name) = path.file_stem() {
-            name.to_string_lossy().bold().to_string()
-        } else {
-            "-".dimmed().to_string()
-        };
+        let name = get_name(&path);
         table.set_titles(row!["Name".dimmed(), c->name]);
 
         // get filetype
-        let filetype = if path.is_file() {
-            "file".truecolor(180, 190, 130).to_string()
-        } else if path.is_dir() {
-            "directory".truecolor(180, 190, 130).to_string()
-        } else if path.is_symlink() {
-            "symlink".truecolor(180, 190, 130).to_string()
-        } else {
-            "-".dimmed().to_string()
-        };
+        let filetype = get_filetype(&path);
         table.add_row(row!["Type".dimmed(), rb->filetype]);
 
         // get file extension
-        let ext = if let Some(ext) = path.extension() {
-            ext.to_string_lossy().to_string()
-        } else {
-            "-".to_string()
-        };
+        let ext = get_extension(&path);
         let extension = ext.truecolor(226, 120, 120).to_string();
         table.add_row(row!["Extension".dimmed(), r->extension]);
 
-        // get file category from file extension
-        let mut category = String::new();
-
-        if EXECUTABLE.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "executable".bold().truecolor(226, 120, 120));
-            category.push_str(&cstr);
-        } else if SPECIAL.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "special".truecolor(226, 164, 120));
-            category.push_str(&cstr);
-        } else if PROGRAMMING.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "programming".truecolor(180, 190, 130));
-            category.push_str(&cstr);
-        } else if OFFICE.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "office".truecolor(226, 120, 120));
-            category.push_str(&cstr);
-        } else if MEDIA.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "media".truecolor(173, 160, 211));
-            category.push_str(&cstr);
-        } else if ARCHIVES.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "archives".truecolor(137, 184, 194));
-            category.push_str(&cstr);
-        } else if OTHER.par_iter().any(|it| ext.eq(it)) {
-            let cstr = format!("{}", "other".truecolor(107, 112, 137));
-            category.push_str(&cstr);
-        } else {
-            let cstr = format!("{}", "-".dimmed());
-            category.push_str(&cstr);
-        }
-
+        // get file category based on file extension
+        let category = get_category(ext);
         table.add_row(row!["Category".dimmed(), r->category]);
 
         // get file metadata
@@ -339,6 +296,73 @@ fn get_metadata(path: PathBuf) {
     } else {
         error!("File \'{}\' not found", path.display());
     }
+}
+
+fn get_name(path: &PathBuf) -> String {
+    let name = if let Some(name) = path.file_stem() {
+        name.to_string_lossy().bold().to_string()
+    } else {
+        "-".dimmed().to_string()
+    };
+
+    name
+}
+
+fn get_filetype(path: &PathBuf) -> String {
+    let filetype = if path.is_file() {
+        "file".truecolor(180, 190, 130).to_string()
+    } else if path.is_dir() {
+        "directory".truecolor(180, 190, 130).to_string()
+    } else if path.is_symlink() {
+        "symlink".truecolor(180, 190, 130).to_string()
+    } else {
+        "-".dimmed().to_string()
+    };
+
+    filetype
+}
+
+fn get_extension(path: &PathBuf) -> String {
+    let ext = if let Some(ext) = path.extension() {
+        ext.to_string_lossy().to_string()
+    } else {
+        "-".to_string()
+    };
+
+    ext
+}
+
+fn get_category(extension: String) -> String {
+    // get file category based on file extension
+    let mut category = String::new();
+
+    if EXECUTABLE.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "executable".bold().truecolor(226, 120, 120));
+        category.push_str(&cstr);
+    } else if SPECIAL.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "special".truecolor(226, 164, 120));
+        category.push_str(&cstr);
+    } else if PROGRAMMING.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "programming".truecolor(180, 190, 130));
+        category.push_str(&cstr);
+    } else if OFFICE.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "office".truecolor(226, 120, 120));
+        category.push_str(&cstr);
+    } else if MEDIA.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "media".truecolor(173, 160, 211));
+        category.push_str(&cstr);
+    } else if ARCHIVES.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "archives".truecolor(137, 184, 194));
+        category.push_str(&cstr);
+    } else if OTHER.par_iter().any(|it| extension.eq(it)) {
+        let cstr = format!("{}", "other".truecolor(107, 112, 137));
+        category.push_str(&cstr);
+    } else {
+        let cstr = format!("{}", "-".dimmed());
+        category.push_str(&cstr);
+    }
+
+    category
 }
 
 fn get_filesize(metadata: fs::Metadata) -> Vec<String> {
