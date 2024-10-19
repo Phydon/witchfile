@@ -101,7 +101,19 @@ fn main() {
                         let name = get_name(&path).normal();
                         let filetype = get_filetype(&path).normal();
                         let extension = get_extension(&path);
-                        table.add_row(row![l->name, l->filetype, l->extension]);
+                        let category = get_category(&extension).normal();
+                        let encoding = if path.is_file() {
+                            match is_unicode(&path) {
+                                Ok(_) => "unicode".to_string(),
+                                _ => "binary".to_string(),
+                            }
+                        } else {
+                            "".to_string()
+                        };
+
+                        table.add_row(
+                            row![l->name, l->filetype, l->extension, l->category, l->encoding],
+                        );
                     }
                     // TODO check if it works
                     Err(ref err) => {
