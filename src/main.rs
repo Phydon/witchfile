@@ -3,9 +3,9 @@ extern crate prettytable;
 use prettytable::{format, Table};
 
 use clap::{Arg, ArgAction, Command};
+use colored::{ColoredString, Colorize};
 use flexi_logger::{detailed_format, Duplicate, FileSpec, Logger};
 use log::{error, warn};
-use owo_colors::colored::*;
 use rayon::prelude::*;
 
 use std::{
@@ -89,7 +89,7 @@ fn main() {
 
             // Initialize table
             let mut table = Table::new();
-            table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+            table.set_format(*format::consts::FORMAT_CLEAN);
 
             for entry in fs::read_dir(".").unwrap_or_else(|err| {
                 error!("Unable to read current directory: {err}");
@@ -98,12 +98,10 @@ fn main() {
                 match entry {
                     Ok(entry) => {
                         let path = entry.path();
-                        let name = get_name(&path);
-                        let filetype = get_filetype(&path);
+                        let name = get_name(&path).normal();
+                        let filetype = get_filetype(&path).normal();
                         let extension = get_extension(&path);
-                        let category = get_category(extension);
-                        table.set_titles(row![c->"Name", c->"Filetype", c->"Category"]);
-                        table.add_row(row![l->name, l->filetype, l->category]);
+                        table.add_row(row![l->name, l->filetype, l->extension]);
                     }
                     // TODO check if it works
                     Err(ref err) => {
@@ -214,7 +212,7 @@ fn get_metadata(path: PathBuf) {
         table.add_row(row!["Extension".dimmed(), r->extension]);
 
         // get file category based on file extension
-        let category = get_category(ext);
+        let category = get_category(&ext);
         table.add_row(row!["Category".dimmed(), r->category]);
 
         // check encoding
@@ -274,6 +272,8 @@ fn get_metadata(path: PathBuf) {
 
             // get creation time
             match &meta.created() {
+                // TODO use let wasd = if true {a} else {b}
+                // TODO OR don't even show Created/Accessed/etc. if emtpy/None
                 Ok(time) => {
                     let humanreadable_time = to_humanreadable(time.to_owned());
                     table.add_row(row![
@@ -282,7 +282,7 @@ fn get_metadata(path: PathBuf) {
                     ]);
                 }
                 _ => {
-                    table.add_row(row!["Created".dimmed(), "-".dimmed()]);
+                    table.add_row(row!["Created".dimmed(), "".dimmed()]);
                 }
             }
             // get last access time
@@ -295,7 +295,7 @@ fn get_metadata(path: PathBuf) {
                     ]);
                 }
                 _ => {
-                    table.add_row(row!["Accessed".dimmed(), "-".dimmed()]);
+                    table.add_row(row!["Accessed".dimmed(), "".dimmed()]);
                 }
             }
             // get last modification time
@@ -308,7 +308,7 @@ fn get_metadata(path: PathBuf) {
                     ]);
                 }
                 _ => {
-                    table.add_row(row!["Modified".dimmed(), "-".dimmed()]);
+                    table.add_row(row!["Modified".dimmed(), "".dimmed()]);
                 }
             }
 
@@ -349,36 +349,36 @@ fn get_metadata(path: PathBuf) {
                     r->"readonly".truecolor(250, 0, 104).dimmed()
                 ]);
             } else {
-                table.add_row(row!["Restrictions".dimmed(), r->"-".dimmed()]);
+                table.add_row(row!["Restrictions".dimmed(), r->"".dimmed()]);
             }
         }
 
         // print table
         table.printstd();
     } else {
-        error!("File \'{}\' not found", path.display());
+        warn!("File \'{}\' not found", path.display());
     }
 }
 
-fn get_name(path: &PathBuf) -> String {
+fn get_name(path: &PathBuf) -> ColoredString {
     let name = if let Some(name) = path.file_stem() {
-        name.to_string_lossy().bold().to_string()
+        name.to_string_lossy().bold()
     } else {
-        "-".dimmed().to_string()
+        "".dimmed()
     };
 
     name
 }
 
-fn get_filetype(path: &PathBuf) -> String {
+fn get_filetype(path: &PathBuf) -> ColoredString {
     let filetype = if path.is_file() {
-        "file".truecolor(180, 190, 130).to_string()
+        "file".truecolor(180, 190, 130)
     } else if path.is_dir() {
-        "directory".truecolor(180, 190, 130).to_string()
+        "directory".truecolor(180, 190, 130)
     } else if path.is_symlink() {
-        "symlink".truecolor(180, 190, 130).to_string()
+        "symlink".truecolor(180, 190, 130)
     } else {
-        "-".dimmed().to_string()
+        "".dimmed()
     };
 
     filetype
@@ -388,40 +388,32 @@ fn get_extension(path: &PathBuf) -> String {
     let ext = if let Some(ext) = path.extension() {
         ext.to_string_lossy().to_string()
     } else {
-        "-".to_string()
+        "".to_string()
     };
 
     ext
 }
 
-fn get_category(extension: String) -> String {
+fn get_category(extension: &String) -> ColoredString {
     // get file category based on file extension
-    let mut category = String::new();
+    let category: ColoredString;
 
     if EXECUTABLE.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "executable".bold().truecolor(226, 120, 120));
-        category.push_str(&cstr);
+        category = "executable".bold().truecolor(226, 120, 120);
     } else if SPECIAL.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "special".truecolor(226, 164, 120));
-        category.push_str(&cstr);
+        category = "special".truecolor(226, 164, 120);
     } else if PROGRAMMING.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "programming".truecolor(180, 190, 130));
-        category.push_str(&cstr);
+        category = "programming".truecolor(180, 190, 130);
     } else if OFFICE.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "office".truecolor(226, 120, 120));
-        category.push_str(&cstr);
+        category = "office".truecolor(226, 120, 120);
     } else if MEDIA.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "media".truecolor(173, 160, 211));
-        category.push_str(&cstr);
+        category = "media".truecolor(173, 160, 211);
     } else if ARCHIVES.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "archives".truecolor(137, 184, 194));
-        category.push_str(&cstr);
+        category = "archives".truecolor(137, 184, 194);
     } else if OTHER.par_iter().any(|it| extension.eq(it)) {
-        let cstr = format!("{}", "other".truecolor(107, 112, 137));
-        category.push_str(&cstr);
+        category = "other".truecolor(107, 112, 137);
     } else {
-        let cstr = format!("{}", "-".dimmed());
-        category.push_str(&cstr);
+        category = "".dimmed();
     }
 
     category
