@@ -170,7 +170,7 @@ fn witchfile() -> Command {
             "  - permissions",
         ))
         // TODO update version
-        .version("1.1.0")
+        .version("1.1.1")
         .author("Leann Phydon <leann.phydon@gmail.com>")
         .arg_required_else_help(true)
         .arg(
@@ -271,86 +271,75 @@ fn get_metadata(path: PathBuf) {
             table.add_row(row!["Size".dimmed(), r->size]);
 
             // get creation time
-            match &meta.created() {
-                // TODO use let wasd = if true {a} else {b}
-                // TODO OR don't even show Created/Accessed/etc. if emtpy/None
-                Ok(time) => {
-                    let humanreadable_time = to_humanreadable(time.to_owned());
-                    table.add_row(row![
-                        "Created".dimmed(),
-                        r->humanreadable_time.truecolor(226, 164, 120)
-                    ]);
-                }
-                _ => {
-                    table.add_row(row!["Created".dimmed(), "".dimmed()]);
-                }
-            }
+            let creation_time = match &meta.created() {
+                Ok(time) => to_humanreadable(time.to_owned()).truecolor(226, 164, 120),
+                _ => "".dimmed(),
+            };
+            table.add_row(row!["Created".dimmed(), r->creation_time]);
+
             // get last access time
-            match &meta.accessed() {
-                Ok(time) => {
-                    let humanreadable_time = to_humanreadable(time.to_owned());
-                    table.add_row(row![
-                        "Accessed".dimmed(),
-                        r->humanreadable_time.truecolor(226, 164, 120)
-                    ]);
-                }
-                _ => {
-                    table.add_row(row!["Accessed".dimmed(), "".dimmed()]);
-                }
-            }
+            let accessed_time = match &meta.accessed() {
+                Ok(time) => to_humanreadable(time.to_owned()).truecolor(226, 164, 120),
+                _ => "".dimmed(),
+            };
+            table.add_row(row![
+                "Accessed".dimmed(),
+                r->accessed_time
+            ]);
+
             // get last modification time
-            match &meta.modified() {
-                Ok(time) => {
-                    let humanreadable_time = to_humanreadable(time.to_owned());
-                    table.add_row(row![
-                        "Modified".dimmed(),
-                        r->humanreadable_time.truecolor(226, 164, 120)
-                    ]);
-                }
-                _ => {
-                    table.add_row(row!["Modified".dimmed(), "".dimmed()]);
-                }
-            }
+            let modified_time = match &meta.modified() {
+                Ok(time) => to_humanreadable(time.to_owned()).truecolor(226, 164, 120),
+                _ => "".dimmed(),
+            };
+            table.add_row(row![
+                "Modified".dimmed(),
+                r->modified_time
+            ]);
 
             // check if hidden
-            if is_hidden(meta.clone()) {
-                table.add_row(row![
-                    "Hidden".dimmed(),
-                    r->"yes".truecolor(137, 184, 194).dimmed()
-                ]);
+            let hidden = if is_hidden(meta.clone()) {
+                "yes".truecolor(137, 184, 194).dimmed()
             } else {
-                table.add_row(row!["Hidden".dimmed(), r->"no".dimmed()]);
-            }
+                "no".dimmed()
+            };
+            table.add_row(row![
+                "Hidden".dimmed(),
+                r->hidden
+            ]);
 
             // check if systemfile
-            if is_systemfile(meta.clone()) {
-                table.add_row(row![
-                    "System".dimmed(),
-                    r->"yes".truecolor(137, 184, 194).dimmed()
-                ]);
+            let systemfile = if is_systemfile(meta.clone()) {
+                "yes".truecolor(137, 184, 194).dimmed()
             } else {
-                table.add_row(row!["System".dimmed(), r->"no".dimmed()]);
-            }
+                "no".dimmed()
+            };
+            table.add_row(row![
+                "System".dimmed(),
+                r->systemfile
+            ]);
 
             // check if temporary
-            if is_temporary(meta.clone()) {
-                table.add_row(row![
-                    "Temporary".dimmed(),
-                    r->"yes".truecolor(137, 184, 194).dimmed()
-                ]);
+            let temporary = if is_temporary(meta.clone()) {
+                "yes".truecolor(137, 184, 194).dimmed()
             } else {
-                table.add_row(row!["Temporary".dimmed(), r->"no".dimmed()]);
-            }
+                "no".dimmed()
+            };
+            table.add_row(row![
+                "Temporary".dimmed(),
+                r->temporary
+            ]);
 
             // get permissions
-            if meta.permissions().readonly() {
-                table.add_row(row![
-                    "Restrictions".dimmed(),
-                    r->"readonly".truecolor(250, 0, 104).dimmed()
-                ]);
+            let readonly = if meta.permissions().readonly() {
+                "yes".truecolor(250, 0, 104).dimmed()
             } else {
-                table.add_row(row!["Restrictions".dimmed(), r->"".dimmed()]);
-            }
+                "no".dimmed()
+            };
+            table.add_row(row![
+                "Readonly".dimmed(),
+                r->readonly
+            ]);
         }
 
         // print table
